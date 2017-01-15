@@ -4,7 +4,7 @@
     <list>
         <mapping class = "com.copperweather.android.db.Province"/>
         <mapping class = "com.copperweather.android.db.City"/>
-        <mapping class = "com.copperweather.android.db.Country"/>
+        <mapping class = "com.copperweather.android.db.County"/>
     </list>
 
 </litepal>
