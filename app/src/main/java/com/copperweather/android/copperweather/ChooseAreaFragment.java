@@ -86,13 +86,14 @@ public class ChooseAreaFragment extends Fragment {
                         intent.putExtra("weather_id", weatherId);
                         startActivity(intent);
                         getActivity().finish();
-                    } else if (getActivity() instanceof WeatherActivity) {
-                        WeatherActivity weatherActivity = (WeatherActivity) getActivity();
-                        weatherActivity.weatherId = weatherId;
-                        weatherActivity.mDrawerLayout.closeDrawers();
-                        weatherActivity.mSwipeRefreshLayout.setRefreshing(true);
-                        weatherActivity.requestWeatherInfo(weatherId);
                     }
+//                    else if (getActivity() instanceof WeatherActivity) {
+//                        WeatherActivity weatherActivity = (WeatherActivity) getActivity();
+//                        weatherActivity.weatherId = weatherId;
+//                        weatherActivity.mDrawerLayout.closeDrawers();
+//                        weatherActivity.mSwipeRefreshLayout.setRefreshing(true);
+//                        weatherActivity.requestWeatherInfo(weatherId);
+//                    }
                 }
             }
         });

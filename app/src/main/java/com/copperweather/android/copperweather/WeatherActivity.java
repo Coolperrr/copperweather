@@ -7,14 +7,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -35,9 +32,6 @@ import com.copperweather.android.util.HttpUtil;
 import com.copperweather.android.util.Utility;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -45,9 +39,6 @@ import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
 
-    private Date mDate = new Date();
-    private SimpleDateFormat mDateFormat = new SimpleDateFormat("MM-dd",
-            Locale.CHINA);
     private ScrollView mWeatherLayout;
     private TextView mTitleCity, mTitleUpdateTime, mDegreeText,
             mWeatherInfoText, mAqiText, mPm25Text, mComfortText, mFluText,
@@ -60,11 +51,10 @@ public class WeatherActivity extends AppCompatActivity {
 
     private ImageView mBingPicImg, mNowWeatherPic;
     protected SwipeRefreshLayout mSwipeRefreshLayout;
-    protected DrawerLayout mDrawerLayout;
     protected String weatherId;
     private int daysCount = 3;
-    private int count;
-    private Button mChooseCityButton;
+
+    private Button mToolButton;
     private final static String MY_KEY = "6d145ff79ddf4bbb8cb920902f898694";
     private Handler handlerRain = new Handler();
 
@@ -73,8 +63,6 @@ public class WeatherActivity extends AppCompatActivity {
         // TODO Auto-generated method stub
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-
-        count = 0;
 
         if (Build.VERSION.SDK_INT >= 21) {
             // View decorView = getWindow().getDecorView();
@@ -92,7 +80,7 @@ public class WeatherActivity extends AppCompatActivity {
             window.setStatusBarColor(Color.TRANSPARENT);
 
         }
-        setContentView(R.layout.acticity_weather);
+        setContentView(R.layout.activity_weather);
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         mSwipeRefreshLayout
@@ -126,16 +114,7 @@ public class WeatherActivity extends AppCompatActivity {
         mWindScale = (TextView) findViewById(R.id.wind_scale);
         mWindSpeed = (TextView) findViewById(R.id.wind_speed);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        mChooseCityButton = (Button) findViewById(R.id.nav_button);
-        mChooseCityButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                mDrawerLayout.openDrawer(GravityCompat.START);
-            }
-        });
+        mToolButton = (Button) findViewById(R.id.nav_button);
 
         mNowWeatherPic = (ImageView) findViewById(R.id.now_weather_state_img);
         mBingPicImg = (ImageView) findViewById(R.id.bing_pic_img);
@@ -220,20 +199,19 @@ public class WeatherActivity extends AppCompatActivity {
     private void showWeatherInfo(Weather weather) {
 
         String cityName = weather.basic.cityName;
-        String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
         String weatherInfo = weather.now.more.nowWeatherState;
         mTitleCity.setText(cityName);
-        mTitleUpdateTime.setText(updateTime);
         mDegreeText.setText(degree);
         mWeatherInfoText.setText(weatherInfo);
         mNowWeatherPic.setImageResource(loadWeatherStatePic(Integer
                 .parseInt(weather.now.more.nowWeatherCode)));
 
-
+        String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String windScale = weather.now.wind.nowWindScale + "级";
         String windSpeed = weather.now.wind.nowWindSpeed + "km/h";
         String windDirection = weather.now.wind.nowWindDirection;
+        mTitleUpdateTime.setText("最近更新于："+updateTime);
         mWindDirection.setText(windDirection);
         mWindSpeed.setText(windSpeed);
         mWindScale.setText(windScale);
@@ -308,7 +286,7 @@ public class WeatherActivity extends AppCompatActivity {
 
         String weatherUrl = "http://guolin.tech/api/weather?cityid="
                 + weatherId + "&key=" + MY_KEY;
-//        String weatherUrl ="http://free-api.heweather.com/v5/weather?city="+"weatherId"+"&key="+MY_KEY;
+//        String weatherUrl ="https://free-api.heweather.com/v5/weather?city="+"weatherId"+"&key="+MY_KEY;
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
 
             @Override
