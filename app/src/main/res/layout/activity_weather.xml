@@ -5,46 +5,15 @@
     android:layout_height="match_parent"
     android:background="?attr/colorPrimary">
 
-    <ImageView
-        android:id="@+id/bing_pic_img"
+    <!--<fragment-->
+    <!--android:id="@+id/weather_fragment"-->
+    <!--android:name="com.copperweather.android.copperweather.WeatherFragment"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" />-->
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="@string/img"
-        android:scaleType="centerCrop" />
-
-
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ScrollView
-            android:id="@+id/weather_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:overScrollMode="never"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/weather_linear_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fitsSystemWindows="true"
-                android:orientation="vertical">
-
-                <include layout="@layout/weather_title" />
-
-                <include layout="@layout/weather_now" />
-
-                <include layout="@layout/weather_wind" />
-
-                <include layout="@layout/weather_forecast" />
-
-                <include layout="@layout/weather_aqi" />
-
-                <include layout="@layout/weather_suggestion" />
-            </LinearLayout>
-        </ScrollView>
-    </android.support.v4.widget.SwipeRefreshLayout>
+        android:layout_height="match_parent"/>
 
 </FrameLayout>

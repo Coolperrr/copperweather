@@ -3,7 +3,9 @@ package com.copperweather.android.copperweather;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -33,6 +35,8 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.copperweather.android.copperweather.WeatherActivity.count;
+
 public class ChooseAreaFragment extends Fragment {
 
     public static final int LEVEL_PROVINCE = 0;
@@ -61,7 +65,7 @@ public class ChooseAreaFragment extends Fragment {
         titleText = (TextView) view.findViewById(R.id.title_text);
         backButton = (Button) view.findViewById(R.id.bt_back);
         listView = (ListView) view.findViewById(R.id.list_view);
-        adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, dataList);
+        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
         return view;
     }
@@ -81,19 +85,28 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
                     if (getActivity() instanceof MainActivity) {
+                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+                        editor.putString("weather"+count,weatherId);
+                        editor.apply();
                         Intent intent = new Intent(getActivity(),
                                 WeatherActivity.class);
-                        intent.putExtra("weather_id", weatherId);
+//                        intent.putExtra("weather_id"+count, weatherId);
                         startActivity(intent);
                         getActivity().finish();
+                    } else if (getActivity() instanceof AddCityActivity) {
+                        count++;
+                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
+                        editor.putString("weather"+count,weatherId);
+                        editor.putInt("countId",count);
+                        editor.apply();
+                        Intent intent = new Intent(getActivity(),
+                                WeatherActivity.class);
+//                        intent.putExtra("weather_id"+count, weatherId);
+                        WeatherActivity.flag =true;
+                        startActivity(intent);
+                        getActivity().finish();
+
                     }
-//                    else if (getActivity() instanceof WeatherActivity) {
-//                        WeatherActivity weatherActivity = (WeatherActivity) getActivity();
-//                        weatherActivity.weatherId = weatherId;
-//                        weatherActivity.mDrawerLayout.closeDrawers();
-//                        weatherActivity.mSwipeRefreshLayout.setRefreshing(true);
-//                        weatherActivity.requestWeatherInfo(weatherId);
-//                    }
                 }
             }
         });

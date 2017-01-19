@@ -13,14 +13,17 @@ import com.copperweather.android.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    WeatherActivity weatherActivity = new WeatherActivity();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
-        if (prefs.getString("weather", null) != null) {
+        if (prefs.getInt("fragmentListSize", 0) >0) {
             Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
             startActivity(intent);
             finish();
