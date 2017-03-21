@@ -3,9 +3,7 @@ package com.copperweather.android.copperweather;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,6 +18,7 @@ import android.widget.Toast;
 
 import com.copperweather.android.R;
 import com.copperweather.android.db.City;
+import com.copperweather.android.db.CityChosen;
 import com.copperweather.android.db.County;
 import com.copperweather.android.db.Province;
 import com.copperweather.android.util.HttpUtil;
@@ -34,8 +33,6 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
-import static com.copperweather.android.copperweather.WeatherActivity.count;
 
 public class ChooseAreaFragment extends Fragment {
 
@@ -84,29 +81,33 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 } else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
-                    if (getActivity() instanceof MainActivity) {
-                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                        editor.putString("weather"+count,weatherId);
-                        editor.apply();
-                        Intent intent = new Intent(getActivity(),
-                                WeatherActivity.class);
-//                        intent.putExtra("weather_id"+count, weatherId);
-                        startActivity(intent);
-                        getActivity().finish();
-                    } else if (getActivity() instanceof AddCityActivity) {
-                        count++;
-                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-                        editor.putString("weather"+count,weatherId);
-                        editor.putInt("countId",count);
-                        editor.apply();
-                        Intent intent = new Intent(getActivity(),
-                                WeatherActivity.class);
-//                        intent.putExtra("weather_id"+count, weatherId);
-                        WeatherActivity.flag =true;
-                        startActivity(intent);
-                        getActivity().finish();
+                    CityChosen chosen = new CityChosen();
+                    chosen.setWeatherId(weatherId);
+                    chosen.save();
+//                    List<CityChosen> list = DataSupport.findAll(CityChosen.class);
+//                    for (int i = 0; i < list.size(); i++) {
+//                        Log.i("tag", "onItemClick: "+list.get(i).getWeatherId()+"\n");
+//                    }
+                    Intent intent = new Intent(getActivity(),WeatherActivity.class);
+                    intent.putExtra("flag","add");
+                    startActivity(intent);
+                    getActivity().finish();
 
-                    }
+//                    if (getActivity() instanceof MainActivity) {
+//                        /**
+//                         * 添加数据
+//                         */
+//                        chosen.setWeatherId(weatherId);
+//                        chosen.save();
+//                        Intent intent = new Intent(getActivity(),WeatherActivity.class);
+//                        startActivity(intent);
+//                        getActivity().finish();
+//                    } else if (getActivity() instanceof AddCityActivity) {
+//                        Intent intent = new Intent(getActivity(),WeatherActivity.class);
+//                        startActivity(intent);
+//                        getActivity().finish();
+//                    }
+
                 }
             }
         });

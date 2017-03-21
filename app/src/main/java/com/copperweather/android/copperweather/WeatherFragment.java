@@ -1,6 +1,7 @@
 package com.copperweather.android.copperweather;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -24,11 +25,14 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.copperweather.android.R;
+import com.copperweather.android.db.CityChosen;
 import com.copperweather.android.gson.Forecast;
 import com.copperweather.android.gson.Weather;
 import com.copperweather.android.service.AutoUpdateService;
 import com.copperweather.android.util.HttpUtil;
 import com.copperweather.android.util.Utility;
+
+import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
 
@@ -51,25 +55,22 @@ public class WeatherFragment extends Fragment {
     private LinearLayout mForecastLayout;
     private ImageView mBingPicImg, mNowWeatherPic;
     protected SwipeRefreshLayout mSwipeRefreshLayout;
-    protected String weatherId;
+    private String weatherId;
     private int daysCount = 3;
-    private int fragmentId ;
-
     private Button mToolButton;
     private final static String MY_KEY = "6d145ff79ddf4bbb8cb920902f898694";
 
     public WeatherFragment() {
 
     }
-
     @SuppressLint("ValidFragment")
-    public WeatherFragment(String weatherId,int fragmentId) {
-        this.weatherId = weatherId;
-        this.fragmentId = fragmentId;
+    public WeatherFragment(String weaId) {
+        weatherId = weaId;
+//        Log.i("tag", "onCreate: "+weatherId);
     }
 
-    public static WeatherFragment newInstance(String weatherId,int fragmentId) {
-        WeatherFragment weatherFragment = new WeatherFragment(weatherId,fragmentId);
+    public static WeatherFragment newInstance(String weaId) {
+        WeatherFragment weatherFragment = new WeatherFragment(weaId);
         return weatherFragment;
     }
 
@@ -82,10 +83,10 @@ public class WeatherFragment extends Fragment {
         mSwipeRefreshLayout
                 .setColorSchemeResources(android.R.color.holo_blue_light);
 
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(getActivity());
-        String weatherString = prefs.getString("weatherInfo"+fragmentId, null);
-
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        Log.i("tag1", "onCreateView: "+weatherId);
+        CityChosen weatherString = DataSupport.select("weatherInfo").where("weatherId = ?",weatherId).findFirst(CityChosen.class);
+//        Log.i("tag1", "onCreateView: "+weatherString.getWeatherInfo());
         mWeatherLayout = (ScrollView) view.findViewById(R.id.weather_layout);
 
         mForecastLayout = (LinearLayout) view.findViewById(R.id.forecast_layout);
@@ -111,7 +112,6 @@ public class WeatherFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), DialogActivity.class);
                 getActivity().startActivity(intent);
-//                getActivity().finish();
             }
         });
 
@@ -123,13 +123,11 @@ public class WeatherFragment extends Fragment {
         } else {
             loadBingPic();
         }
-
-        if (weatherString != null) {
-            Weather weather = Utility.handleWeatherResponse(weatherString);
-            weatherId = weather.basic.weatherId;
+//        Log.i("tag", "onCreate2: "+weatherId+"\n"+weatherString.getWeatherInfo()+"\n"+weatherString);
+        if (weatherString.getWeatherInfo()!=null) {
+            Weather weather = Utility.handleWeatherResponse(weatherString.getWeatherInfo());
             showWeatherInfo(weather);
         } else {
-//            weatherId = getActivity().getIntent().getStringExtra("weather_id");
             mWeatherLayout.setVisibility(View.INVISIBLE);
             requestWeatherInfo(weatherId);
         }
@@ -141,7 +139,6 @@ public class WeatherFragment extends Fragment {
                 requestWeatherInfo(weatherId);
             }
         });
-
         return view;
     }
 
@@ -149,7 +146,6 @@ public class WeatherFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (Build.VERSION.SDK_INT >= 21) {
-
             Window window = getActivity().getWindow();
             window.getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -268,10 +264,9 @@ public class WeatherFragment extends Fragment {
         mUVText.setText(uv);
         mSportText.setText(sport);
 
-        if (weather != null && "ok".equals(weather.status)) {
+        if ("ok".equals(weather.status)) {
             Intent i = new Intent(getActivity(), AutoUpdateService.class);
             getActivity().startService(i);
-
         } else {
             Toast.makeText(getActivity(), "更新失败了",
                     Toast.LENGTH_SHORT).show();
@@ -296,13 +291,10 @@ public class WeatherFragment extends Fragment {
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         if (weather != null && "ok".equals(weather.status)) {
-                            SharedPreferences.Editor editor = PreferenceManager
-                                    .getDefaultSharedPreferences(
-                                            getActivity()).edit();
-                            editor.putString("weatherInfo"+fragmentId, responseText);
-                            editor.apply();
+                            ContentValues values = new ContentValues();
+                            values.put("weatherInfo",responseText);
+                            DataSupport.updateAll(CityChosen.class,values,"weatherId=?",weatherId);
                             showWeatherInfo(weather);
-
                         } else {
                             Toast.makeText(getActivity(),
                                     "获取天气信息失败", Toast.LENGTH_SHORT).show();

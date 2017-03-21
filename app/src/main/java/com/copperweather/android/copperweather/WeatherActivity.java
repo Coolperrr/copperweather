@@ -1,12 +1,10 @@
 package com.copperweather.android.copperweather;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -18,7 +16,11 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.copperweather.android.R;
+import com.copperweather.android.db.CityChosen;
 import com.copperweather.android.snowfall.FlakeView;
+import com.copperweather.android.util.ZoomOutPageTransformer;
+
+import org.litepal.crud.DataSupport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,15 +33,12 @@ public class WeatherActivity extends AppCompatActivity {
     private FlakeView flakeView;
     private Handler handlerRain = new Handler();
     public List<WeatherFragment> fragmentList = new ArrayList<>();
-    public List<String> weatherIdList = new ArrayList<>();
-    public static boolean flag = false;
-    public static int count =0;
-    SharedPreferences prefs;
+    public List<CityChosen> weatherIdList = new ArrayList<>();
+    private Intent intent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= 21) {
-
             Window window = getWindow();
             window.getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -49,40 +48,42 @@ public class WeatherActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_weather);
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
+        //从数据库里获取数据
+        weatherIdList = DataSupport.findAll(CityChosen.class);
 
         mPager = (ViewPager) findViewById(R.id.viewpager);
         mFrameLayout = (FrameLayout) findViewById(R.id.frame_layout);
         flakeView = new FlakeView(this);
         mFrameLayout.addView(flakeView);
 
-
-        if (fragmentList.size() >= 0) {
-            for (int i = 0;i<=prefs.getInt("countId",0);i++){
-                weatherIdList.add(prefs.getString("weather"+i,null));
-                Log.i("TAG", "fragmentList " + fragmentList.size() + "count " +
-                        mPager.getCurrentItem()+"weatherList"+weatherIdList.toString());
-                fragmentList.add(WeatherFragment.newInstance(weatherIdList.get(i),i));
+        if (!weatherIdList.isEmpty()) {
+            for (int i = 0;i<weatherIdList.size();i++){
+                fragmentList.add(WeatherFragment.newInstance(weatherIdList.get(i).getWeatherId()));
+                Log.i("tag", "onCreate: "+weatherIdList.get(i).getWeatherId()+"\n"+fragmentList.get(i).toString());
             }
-            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-            editor.putInt("fragmentListSize", fragmentList.size());
-            editor.apply();
+            Log.i("tag", "onCreate: "+weatherIdList.size());
         }
 
-
-        mAdapter = new MyPagerAdapter(this.getSupportFragmentManager());
+        mAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mAdapter);
+        mPager.setPageTransformer(true,new ZoomOutPageTransformer());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(getIntent()!=null){
+            intent = getIntent();
+            if(intent.getStringExtra("flag")=="add"){
+                weatherIdList = DataSupport.findAll(CityChosen.class);
+                addNewItem();
+            }
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(flag){
-            addNewItem();
-        }
-        Log.i("TAG", "fragmentList " + fragmentList.size() + "count " +
-                mPager.getCurrentItem()+"weatherList"+weatherIdList.toString());
 //        handlerRain.postDelayed(runnableRain, 1000);
     }
 
@@ -98,10 +99,7 @@ public class WeatherActivity extends AppCompatActivity {
     };
 
     public void addNewItem() {
-//        weatherIdList.add(prefs.getString("weather"+count,null));
-//        fragmentList.add(WeatherFragment.newInstance(weatherIdList.get(mPager.getCurrentItem())));
         mAdapter.notifyDataSetChanged();
-        flag = false;
     }
 
     public void removeCurrentItem() {
@@ -117,7 +115,8 @@ public class WeatherActivity extends AppCompatActivity {
         }
 
         @Override
-        public Fragment getItem(int position) {
+        public WeatherFragment getItem(int position) {
+            Log.i("tag", "onCreate: "+position);
             return fragmentList.get(position);
         }
 

@@ -1,33 +1,34 @@
 package com.copperweather.android.copperweather;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 
 import com.copperweather.android.R;
+import com.copperweather.android.db.CityChosen;
+
+import org.litepal.crud.DataSupport;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    WeatherActivity weatherActivity = new WeatherActivity();
+    private  List<CityChosen> cityChosens;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(this);
-        if (prefs.getInt("fragmentListSize", 0) >0) {
-            Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
-            startActivity(intent);
+        cityChosens= DataSupport.findAll(CityChosen.class);
+        if(!cityChosens.isEmpty()){
+            startActivity(new Intent(MainActivity.this, WeatherActivity.class));
             finish();
         }
+
     }
 
     @Override

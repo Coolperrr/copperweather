@@ -42,7 +42,7 @@ public class AutoUpdateService extends Service {
 		PendingIntent pi = PendingIntent.getService(this, 0, i, 0);
 		manager.cancel(pi);
 		manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi);
-		return super.onStartCommand(intent, flags, startId);
+		return START_STICKY_COMPATIBILITY;
 	}
 
 	private void updateBingPic() {
